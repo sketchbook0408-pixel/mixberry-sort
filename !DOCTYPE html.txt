@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MiX BeRRY 楽曲ソート</title>
+<style>
+body {font-family: sans-serif;text-align: center;background: #fff0f5;}
+.song {display:inline-block;width:220px;margin:20px;padding:20px;background:#fff;border-radius:12px;cursor:pointer;}
+.song:hover {background:#ffe4ec;}
+button {margin:10px;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;}
+#shareBtn {background:#1DA1F2;color:white;}
+</style>
+</head>
+<body>
+
+<h1>🍓 MiX BeRRY 楽曲ソート</h1>
+<p id="progress"></p>
+
+<div>
+  <div class="song" id="left" onclick="choose(0)"></div>
+  <div class="song" id="right" onclick="choose(1)"></div>
+</div>
+
+<button onclick="draw()">引き分け</button>
+
+<div id="result"></div>
+
+<script>
+const songs = [
+"Magic Moment","群青のキャンバス","君と青春メトロ","ラストアンコール","夏影リフレイン",
+"シェイクディスコ","Dear beloved","君史上レボリューション","恋のパティシエ","君にガチ恋！",
+"桜シンフォニー","ひだまりスノードロップ","ラブクラッチュ!!","ツインテすくらんぶる！",
+"ちゅ！はぴまり","VeRY BeRRY HeaRT","プロローグ","キミコイ☆アゲアゲサマー"
+];
+
+let shuffled = songs.sort(() => Math.random() - 0.5);
+let work = shuffled.map(x => [x]);
+let left=[], right=[], result=[];
+let li=0, ri=0;
+let step=0;
+let finalResult=[];
+
+function next() {
+  if (work.length === 1 && left.length === 0 && right.length === 0) {
+    finalResult = work[0];
+    showResult(finalResult);
+    return;
+  }
+
+  if (left.length === 0 && right.length === 0) {
+    left = work.shift();
+    right = work.shift() || [];
+    result = [];
+    li = ri = 0;
+  }
+
+  if (li >= left.length) {
+    result.push(...right.slice(ri));
+    finishMerge();
+    return;
+  }
+  if (ri >= right.length) {
+    result.push(...left.slice(li));
+    finishMerge();
+    return;
+  }
+
+  document.getElementById("left").innerText = left[li];
+  document.getElementById("right").innerText = right[ri];
+  document.getElementById("progress").innerText = "比較数：" + step;
+}
+
+function choose(side) {
+  if (side === 0) result.push(left[li++]);
+  else result.push(right[ri++]);
+  step++;
+  next();
+}
+
+function draw() {
+  result.push(left[li++]);
+  result.push(right[ri++]);
+  step++;
+  next();
+}
+
+function finishMerge() {
+  work.push(result);
+  left = [];
+  right = [];
+  next();
+}
+
+function showResult(list) {
+  let html = "<h1>結果</h1>";
+  list.forEach((s,i)=>{
+    html += `<p>${i+1}位：${s}</p>`;
+  });
+
+  html += `<button id="shareBtn" onclick="shareResult()">Xでシェア</button>`;
+
+  document.body.innerHTML = html;
+}
+
+function shareResult() {
+  let text = "🍓MiX BeRRY楽曲ソート結果🍓\\n";
+  finalResult.slice(0,5).forEach((s,i)=>{
+    text += (i+1)+"位："+s+"\\n";
+  });
+  text += "#MiXBeRRY #楽曲ソート";
+
+  let url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+  window.open(url, "_blank");
+}
+
+next();
+</script>
+
+</body>
+</html>

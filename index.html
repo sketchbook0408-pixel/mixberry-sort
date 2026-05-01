@@ -1,171 +1,442 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>MiX BeRRY 楽曲ソート</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  background: #fff0f5;
-  margin: 0;
-  padding: 20px;
-}
-h1 { margin-bottom: 10px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiX BeRRY Song Sort</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-pink: #ff6699;
+            --light-pink: #ffeef4;
+            --bg-color: #fff9fb;
+            --text-color: #4a4a4a;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 8px 32px rgba(255, 102, 153, 0.15);
+        }
 
-.song {
-  display: inline-block;
-  width: 40%;
-  max-width: 250px;
-  margin: 10px;
-  padding: 20px;
-  background: #fff;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-}
-.song:hover { background: #ffe4ec; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-button {
-  margin: 10px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 14px;
-}
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at 10% 20%, rgba(255, 102, 153, 0.05) 0%, rgba(255, 255, 255, 1) 90%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-#shareBtn {
-  background: #1DA1F2;
-  color: white;
-}
+        /* Animated background elements - 動く装飾 */
+        .bg-decor {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--light-pink) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(60px);
+            opacity: 0.6;
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        .decor-1 { top: -200px; right: -100px; }
+        .decor-2 { bottom: -200px; left: -100px; animation-delay: -10s; }
 
-@media (max-width: 600px) {
-  .song {
-    width: 90%;
-  }
-}
-</style>
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(40px, 60px) rotate(10deg); }
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 540px;
+            padding: 60px 24px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* Header & Logo - 王道デザイン */
+        .header {
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 3.2rem;
+            font-weight: 900;
+            margin: 0;
+            background: linear-gradient(to bottom, #ff99cc, var(--primary-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(2px 2px 0px #fff) drop-shadow(-1px -1px 0px #fff);
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--primary-pink);
+            margin-top: 8px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        /* Progress Bar - 洗練されたプログレスバー */
+        .progress-wrapper {
+            margin-bottom: 60px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.03);
+            height: 8px;
+            border-radius: 100px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff99cc, var(--primary-pink));
+            width: 0%;
+            border-radius: 100px;
+            transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* Battle Cards - グラスモーフィズム */
+        #battle-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .song-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 40px 20px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            line-height: 1.6;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .song-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: var(--white);
+            border-color: var(--primary-pink);
+            box-shadow: 0 20px 40px rgba(255, 102, 153, 0.25);
+        }
+
+        .song-card:active {
+            transform: scale(0.95);
+        }
+
+        .btn-draw {
+            background: none;
+            border: none;
+            color: var(--primary-pink);
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            padding: 15px 30px;
+            border-radius: 50px;
+            transition: 0.3s;
+            opacity: 0.6;
+        }
+
+        .btn-draw:hover {
+            opacity: 1;
+            background: var(--light-pink);
+        }
+
+        /* Result View */
+        #result-view {
+            display: none;
+            animation: slideUp 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #result-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 50px 30px;
+            border-radius: 40px;
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+
+        .result-title {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 40px;
+            font-size: 1.6rem;
+            font-weight: 900;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .result-item {
+            display: flex;
+            padding: 20px 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .result-item:hover {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+        }
+
+        .rank-num {
+            width: 50px;
+            font-weight: 900;
+            color: var(--primary-pink);
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .top-1 {
+            background: linear-gradient(135deg, var(--primary-pink), #ff99cc);
+            color: white;
+            border-radius: 24px;
+            padding: 35px 25px;
+            margin-bottom: 25px;
+            border: none;
+            box-shadow: 0 15px 35px rgba(255, 102, 153, 0.35);
+        }
+
+        .top-1 .rank-num { color: white; font-size: 2.2rem; }
+        .top-1 .song-name { font-size: 1.5rem; font-weight: 900; }
+
+        .btn-share {
+            width: 100%;
+            background: var(--text-color);
+            color: white;
+            border: none;
+            padding: 22px;
+            border-radius: 20px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            margin-top: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-share:hover {
+            background: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-retry {
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--primary-pink);
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+        }
+
+        .btn-retry:hover { opacity: 1; }
+
+        @media (max-width: 480px) {
+            #battle-area { grid-template-columns: 1fr; }
+            .logo { font-size: 2.5rem; }
+            #app-container { padding: 40px 16px; }
+            .song-card { min-height: 120px; }
+        }
+    </style>
 </head>
 <body>
 
-<h1>🍓 MiX BeRRY 楽曲ソート</h1>
-<p id="progress"></p>
+<div class="bg-decor decor-1"></div>
+<div class="bg-decor decor-2"></div>
 
-<div id="battle">
-  <div class="song" id="left" onclick="choose(0)"></div>
-  <div class="song" id="right" onclick="choose(1)"></div>
+<div id="app-container">
+    <!-- Main Game View -->
+    <div id="game-view">
+        <div class="header">
+            <h1 class="logo">MiX BeRRY</h1>
+            <div class="tagline">SELECTIVE SORT</div>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div id="battle-area">
+            <div class="song-card" id="left" onclick="choose(0)"></div>
+            <div class="song-card" id="right" onclick="choose(1)"></div>
+        </div>
+
+        <button class="btn-draw" onclick="draw()">どちらも大切</button>
+    </div>
+
+    <!-- Result View -->
+    <div id="result-view">
+        <div id="result-card">
+            <h2 class="result-title">MY FAVORITES</h2>
+            <div id="result-list"></div>
+            <button class="btn-share" onclick="shareResult()">結果をポストする</button>
+            <button class="btn-retry" onclick="location.reload()">RETRY</button>
+        </div>
+    </div>
 </div>
-
-<div>
-  <button onclick="draw()">引き分け</button>
-</div>
-
-<div id="result"></div>
 
 <script>
+/**
+ * 楽曲リスト
+ */
 const songs = [
-"Magic Moment","群青のキャンバス","君と青春メトロ","ラストアンコール","夏影リフレイン",
-"シェイクディスコ","Dear beloved","君史上レボリューション","恋のパティシエ","君にガチ恋！",
-"桜シンフォニー","ひだまりスノードロップ","ラブクラッチュ!!","ツインテすくらんぶる！",
-"ちゅ！はぴまり","VeRY BeRRY HeaRT","プロローグ","キミコイ☆アゲアゲサマー"
+    "Magic Moment",
+    "群青のキャンバス",
+    "君と青春メトロ",
+    "ラストアンコール",
+    "夏影リフレイン",
+    "シェイクディスコ",
+    "Dear beloved",
+    "君史上レボリューション",
+    "恋のパティシエ",
+    "君にガチ恋！",
+    "桜シンフォニー",
+    "ひだまりスノードロップ",
+    "ラブクラッチュ!!",
+    "ツインテすくらんぶる！",
+    "ちゅ！はぴまり",
+    "VeRY BeRRY HeaRT",
+    "プロローグ",
+    "キミコイ☆アゲアゲサマー"
 ];
 
-// シャッフル
+// ソートロジック
 let shuffled = [...songs].sort(() => Math.random() - 0.5);
-
-// マージソート構造
 let work = shuffled.map(x => [x]);
-let left=[], right=[], result=[];
-let li=0, ri=0;
-let step=0;
-let finalResult=[];
+let left = [], right = [], result = [];
+let li = 0, ri = 0;
+let step = 0;
+let finalResult = [];
+
+const totalEstimatedSteps = Math.ceil(songs.length * Math.log2(songs.length));
 
 function next() {
-  if (work.length === 1 && left.length === 0 && right.length === 0) {
-    finalResult = work[0];
-    showResult(finalResult);
-    return;
-  }
+    const progress = Math.min((step / (totalEstimatedSteps * 0.8)) * 100, 99);
+    document.getElementById("progress-bar").style.width = progress + "%";
 
-  if (left.length === 0 && right.length === 0) {
-    left = work.shift();
-    right = work.shift() || [];
-    result = [];
-    li = ri = 0;
-  }
+    if (work.length === 1 && left.length === 0 && right.length === 0) {
+        finalResult = work[0];
+        showResult(finalResult);
+        return;
+    }
 
-  if (li >= left.length) {
-    result.push(...right.slice(ri));
-    finishMerge();
-    return;
-  }
-  if (ri >= right.length) {
-    result.push(...left.slice(li));
-    finishMerge();
-    return;
-  }
+    if (left.length === 0 && right.length === 0) {
+        left = work.shift();
+        right = work.shift() || [];
+        result = [];
+        li = ri = 0;
+    }
 
-  document.getElementById("left").innerText = left[li];
-  document.getElementById("right").innerText = right[ri];
-  document.getElementById("progress").innerText = "比較数：" + step;
+    if (li >= left.length) {
+        result.push(...right.slice(ri));
+        finishMerge();
+        return;
+    }
+    if (ri >= right.length) {
+        result.push(...left.slice(li));
+        finishMerge();
+        return;
+    }
+
+    document.getElementById("left").innerText = left[li];
+    document.getElementById("right").innerText = right[ri];
 }
 
 function choose(side) {
-  if (side === 0) result.push(left[li++]);
-  else result.push(right[ri++]);
-  step++;
-  next();
+    if (side === 0) result.push(left[li++]);
+    else result.push(right[ri++]);
+    step++;
+    next();
 }
 
 function draw() {
-  result.push(left[li++]);
-  result.push(right[ri++]);
-  step++;
-  next();
+    result.push(left[li++]);
+    result.push(right[ri++]);
+    step++;
+    next();
 }
 
 function finishMerge() {
-  work.push(result);
-  left = [];
-  right = [];
-  next();
+    work.push(result);
+    left = [];
+    right = [];
+    next();
 }
 
 function showResult(list) {
-  let html = "<h2>結果発表</h2>";
+    document.getElementById("game-view").style.display = "none";
+    document.getElementById("result-view").style.display = "block";
+    
+    let html = "";
+    list.slice(0, 10).forEach((s, i) => {
+        let rankNum = (i + 1);
+        let rowClass = "result-item";
+        if (i === 0) rowClass += " top-1";
 
-  list.forEach((s,i)=>{
-    if(i === 0){
-      html += `<p style="font-size:22px;font-weight:bold;">🥇1位：${s}</p>`;
-    } else if(i === 1){
-      html += `<p style="font-size:18px;">🥈2位：${s}</p>`;
-    } else if(i === 2){
-      html += `<p style="font-size:16px;">🥉3位：${s}</p>`;
-    } else {
-      html += `<p>${i+1}位：${s}</p>`;
-    }
-  });
+        html += `
+            <div class="${rowClass}">
+                <div class="rank-num">${rankNum < 10 ? '0' + rankNum : rankNum}</div>
+                <div class="song-name">${s}</div>
+            </div>`;
+    });
 
-  html += `<button id="shareBtn" onclick="shareResult()">Xでシェア</button>`;
-
-  document.body.innerHTML = html;
+    document.getElementById("result-list").innerHTML = html;
 }
 
 function shareResult() {
-  let text = "🍓MiX BeRRY楽曲ソート結果🍓\\n";
-  finalResult.slice(0,5).forEach((s,i)=>{
-    text += (i+1)+"位："+s+"\\n";
-  });
-  text += "#MiXBeRRY #楽曲ソート";
-
-  let url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
-  window.open(url, "_blank");
+    let text = "🍓 MiX BeRRY 楽曲ソート結果 🍓\n\n";
+    finalResult.slice(0, 5).forEach((s, i) => {
+        text += (i + 1) + "位：" + s + "\n";
+    });
+    text += "\n#MiXBeRRY #楽曲ソート";
+    const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
 }
 
-next();
+window.onload = next;
 </script>
 
 </body>
